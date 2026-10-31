@@ -17,16 +17,22 @@ $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
 $(BUILD_DIR)/boot.o: kernel/boot/boot.asm | $(BUILD_DIR)
-	nasm $(ASFLAGS) $< -o $@
+	$(AS) $(ASFLAGS) $< -o $@
 
-$(BUILD_DIR)/kernel.o: kernel/src/kernel.c kernel/include/keyboard.h | $(BUILD_DIR)
+$(BUILD_DIR)/isr.o: kernel/boot/isr.asm | $(BUILD_DIR)
+	$(AS) $(ASFLAGS) $< -o $@
+
+$(BUILD_DIR)/kernel.o: kernel/src/kernel.c kernel/include/keyboard.h kernel/include/interrupts.h | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/keyboard.o: kernel/src/keyboard.c kernel/include/keyboard.h | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(KERNEL_ELF): $(BUILD_DIR)/boot.o $(BUILD_DIR)/kernel.o $(BUILD_DIR)/keyboard.o kernel/linker.ld
-	$(LD) -m elf_i386 -T kernel/linker.ld -nostdlib -o $@ $(BUILD_DIR)/boot.o $(BUILD_DIR)/kernel.o $(BUILD_DIR)/keyboard.o
+$(BUILD_DIR)/interrupts.o: kernel/src/interrupts.c kernel/include/interrupts.h | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(KERNEL_ELF): $(BUILD_DIR)/boot.o $(BUILD_DIR)/isr.o $(BUILD_DIR)/kernel.o $(BUILD_DIR)/keyboard.o $(BUILD_DIR)/interrupts.o kernel/linker.ld
+	$(LD) -m elf_i386 -T kernel/linker.ld -nostdlib -o $@ $(BUILD_DIR)/boot.o $(BUILD_DIR)/isr.o $(BUILD_DIR)/kernel.o $(BUILD_DIR)/keyboard.o $(BUILD_DIR)/interrupts.o
 
 clean:
 	rm -rf $(BUILD_DIR)
