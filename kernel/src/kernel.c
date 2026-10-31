@@ -1,4 +1,6 @@
 #include "keyboard.h"
+#include "gdt.h"
+#include "interrupts.h"
 
 typedef unsigned short uint16_t;
 
@@ -193,6 +195,9 @@ void kernel_main(void)
     char command[128];
     unsigned int command_length = 0;
 
+    gdt_load();
+    interrupts_init();
+    
     terminal_clear();
 
     terminal_write("Welcome to HazBu OS!\n");
