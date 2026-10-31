@@ -168,6 +168,11 @@ static void execute_command(const char *command)
         terminal_write("HazBu OS version 0.1.0\n");
         terminal_write("Architecture: x86 (32-bit)\n");
     }
+    else if (string_equals(command, "testint"))
+    {
+        terminal_write("Testing IDT with INT3...\n");
+        __asm__ volatile ("int $3");
+    }
     else if (string_equals(command, "clear"))
     {
         terminal_clear();
